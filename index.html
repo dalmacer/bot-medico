@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Dr. Bot – Asistente de Salud</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#f0f9ff,#e0f2fe 50%,#f0fdf4);min-height:100vh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+input,select,button{font-family:inherit}
+input::placeholder{color:#9ca3af}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#1e3a8a,#1e40af 60%,#2563eb);padding:14px 16px 0;color:white;box-shadow:0 4px 20px rgba(30,58,138,.4)}
+.header-top{display:flex;align-items:center;gap:12px;padding-bottom:12px}
+.avatar-wrap{position:relative;flex-shrink:0;cursor:pointer}
+.avatar{width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.avatar-edit{position:absolute;bottom:-2px;right:-2px;background:#10b981;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid white}
+.user-info{flex:1;min-width:0}
+.user-greeting{font-size:11px;opacity:.7}
+.user-name{font-size:17px;font-weight:700;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-sub{font-size:11px;opacity:.6;margin-top:2px}
+.header-count{text-align:center}
+.header-count .num{font-size:22px;font-weight:800}
+.header-count .lbl{font-size:10px;opacity:.7}
+.name-edit{display:flex;gap:6px}
+.name-edit input{flex:1;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:6px 10px;color:white;font-size:13px;outline:none}
+.name-edit button{background:#10b981;border:none;border-radius:8px;padding:6px 12px;color:white;cursor:pointer;font-weight:700;font-size:15px}
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:12px;padding:4px}
+.tab{flex:1;background:transparent;border:none;border-radius:8px;padding:6px 2px;color:rgba(255,255,255,.75);font-weight:500;font-size:10.5px;cursor:pointer;transition:all .2s}
+.tab.active{background:white;color:#1e40af;font-weight:700}
+.tab-icon{font-size:15px;display:block}
+
+/* CONTENT */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.scroll{flex:1;overflow-y:auto;padding:14px}
+
+/* CHAT */
+.chat-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg-row{display:flex;gap:8px}
+.msg-row.user{justify-content:flex-end}
+.msg-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;margin-top:4px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.msg-avatar.bot{background:linear-gradient(135deg,#1e40af,#2563eb)}
+.msg-avatar.reminder{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.msg-avatar.me{background:rgba(30,64,175,.12);border:2px solid #bfdbfe;font-size:20px}
+.msg-bubble{max-width:78%;border-radius:18px;padding:10px 14px;font-size:14px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.08);white-space:pre-line}
+.msg-bubble.bot{background:white;color:#1f2937;border-top-left-radius:4px}
+.msg-bubble.reminder{background:#fef3c7;color:#92400e;border-top-left-radius:4px}
+.msg-bubble.user{background:linear-gradient(135deg,#1e40af,#2563eb);color:white;border-bottom-right-radius:4px}
+.reminder-img{margin-top:8px;border-radius:12px;overflow:hidden;max-width:130px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.reminder-img img{width:100%;display:block}
+.chat-input-bar{padding:10px 12px;background:white;border-top:1px solid #e5e7eb;display:flex;gap:8px}
+.chat-input-bar input{flex:1;border:1.5px solid #e5e7eb;border-radius:12px;padding:10px 14px;font-size:14px;outline:none;color:#1f2937}
+.chat-send{background:linear-gradient(135deg,#1e40af,#2563eb);border:none;border-radius:12px;padding:10px 16px;color:white;font-size:18px;cursor:pointer}
+.chat-send:disabled{opacity:.5;cursor:not-allowed}
+.thinking{background:white;border-radius:18px 18px 18px 4px;padding:10px 14px;font-size:14px;color:#6b7280;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+
+/* CARDS */
+.card{background:white;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.card-title{font-size:15px;font-weight:700;margin-bottom:12px}
+.inp{width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;font-size:14px;outline:none;color:#1f2937;background:#f9fafb;margin-bottom:8px}
+.lbl{font-size:11px;color:#6b7280;margin-bottom:3px}
+.row2{display:flex;gap:8px;margin-bottom:8px}
+.row2 .col{flex:1}
+.btn-fill{width:100%;border:none;border-radius:10px;padding:11px 0;color:white;font-weight:700;font-size:14px;cursor:pointer}
+.btn-outline{width:100%;background:white;border-radius:10px;padding:10px 0;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.btn-danger{width:100%;background:#fff1f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px 0;font-weight:700;font-size:13px;cursor:pointer;color:#dc2626;margin-bottom:10px}
+.btn-row{display:flex;gap:8px;margin-top:6px}
+.btn-row .btn-fill{flex:1}
+
+/* FOTO MED */
+.foto-zone{width:100%;height:150px;border-radius:12px;margin-bottom:10px;border:2px dashed #bfdbfe;background:#eff6ff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative}
+.foto-zone img{width:100%;height:100%;object-fit:cover}
+.foto-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px}
+.foto-placeholder .icon{font-size:42px}
+.foto-placeholder .txt{font-size:13px;color:#3b82f6;font-weight:600}
+.foto-placeholder .sub{font-size:11px;color:#93c5fd}
+.remove-btn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:28px;height:28px;color:white;cursor:pointer;font-size:14px}
+
+/* PASTILLERO */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.med-card{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);position:relative}
+.med-foto{height:120px;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.med-foto img{width:100%;height:100%;object-fit:cover}
+.med-foto .emoji{font-size:54px}
+.med-info{padding:10px 10px 12px}
+.med-name{font-weight:700;font-size:13px;color:#1f2937;line-height:1.3;margin-bottom:2px}
+.med-dosis{font-size:11px;color:#6b7280}
+.med-hora{font-size:11px;color:#1e40af;font-weight:600;margin-top:4px}
+.med-freq{font-size:10px;color:#9ca3af}
+.med-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.45);border:none;border-radius:50%;width:26px;height:26px;color:white;cursor:pointer;font-size:13px}
+
+/* REGISTROS */
+.reg-card{background:white;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+.reg-row{display:flex;justify-content:space-between;align-items:flex-start}
+.reg-val{font-size:22px;font-weight:800;color:#1f2937}
+.reg-unit{font-size:12px;color:#9ca3af}
+.reg-sub{font-size:12px;color:#6b7280}
+.reg-fecha{font-size:11px;color:#9ca3af;margin-top:2px}
+.reg-nota{font-size:12px;color:#4b5563;margin-top:4px}
+.reg-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.badge{border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700}
+.del-btn{background:#fee2e2;border:none;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:14px}
+.ref-box{border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:12px;line-height:1.8}
+
+/* GRÁFICO */
+.grafico-card{background:white;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.grafico-title{font-size:14px;font-weight:700;margin-bottom:12px}
+.grafico-svg{width:100%;overflow:visible}
+.grafico-empty{text-align:center;padding:20px;color:#9ca3af;font-size:13px}
+.grafico-leyenda{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+.leyenda-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280}
+.leyenda-dot{width:10px;height:10px;border-radius:50%}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:#9ca3af}
+.empty .ico{font-size:48px;margin-bottom:12px}
+.empty .txt{font-size:14px;white-space:pre-line}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:9999}
+
+/* MODAL FOTO */
+#foto-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:flex-end;justify-content:center}
+#foto-modal.open{display:flex}
+.foto-modal-inner{background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px}
+.foto-opt{width:100%;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:14px;background:#f9fafb;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:10px;color:#1f2937;font-weight:600}
+
+/* CONFIRM MODAL */
+#confirm-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;align-items:center;justify-content:center;padding:20px}
+#confirm-modal.open{display:flex}
+#modal-calendario.open{display:flex!important}
+#modal-borrar-med.open{display:flex!important}
+.confirm-inner{background:white;border-radius:16px;padding:24px;width:100%;max-width:340px;text-align:center}
+.confirm-inner h3{font-size:16px;color:#1f2937;margin-bottom:8px}
+.confirm-inner p{font-size:13px;color:#6b7280;margin-bottom:20px;line-height:1.5}
+.confirm-btns{display:flex;gap:10px}
+.confirm-btns button{flex:1;border:none;border-radius:10px;padding:11px;font-weight:700;font-size:14px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div style="font-size:56px">🤖</div>
+  <div style="font-size:18px;font-weight:700;color:#1e40af">Dr. Bot</div>
+  <div style="font-size:14px;color:#6b7280">Cargando tus datos...</div>
+</div>
+
+<!-- MODAL FUENTE FOTO -->
+<div id="foto-modal">
+  <div class="foto-modal-inner">
+    <h3 style="text-align:center;margin-bottom:16px;color:#1f2937;font-size:15px">📷 Foto del medicamento</h3>
+    <button class="foto-opt" onclick="abrirCamara()"><span style="font-size:24px">📸</span><span>Sacar foto con la cámara</span></button>
+    <button class="foto-opt" onclick="abrirGaleria()"><span style="font-size:24px">🖼️</span><span>Elegir foto guardada</span></button>
+    <button class="btn-fill" style="background:#6b7280;margin-top:4px" onclick="cerrarModalFoto()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL AGREGAR A GOOGLE CALENDAR -->
+<div id="modal-calendario" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;align-items:flex-end;justify-content:center">
+  <div style="background:white;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px">
+    <div style="text-align:center;font-size:36px;margin-bottom:8px">📅</div>
+    <h3 style="text-align:center;font-size:16px;color:#1f2937;margin-bottom:6px">¿Agregar a Google Calendar?</h3>
+    <p style="text-align:center;font-size:13px;color:#6b7280;margin-bottom:6px">Recibirás una notificación para tomar:</p>
+    <div style="background:#eff6ff;border-radius:10px;padding:12px;text-align:center;margin-bottom:16px">
+      <div style="font-weight:700;font-size:15px;color:#1e40af" id="modal-cal-nombre"></div>
+      <div style="font-size:12px;color:#6b7280;margin-top:3px" id="modal-cal-hora"></div>
+    </div>
+    <button onclick="confirmarAgregarCalendario()"
+      style="width:100%;background:linear-gradient(135deg,#34a853,#1e8a3e);border:none;border-radius:12px;padding:13px;color:white;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:10px">
+      ✅ Sí, abrir Google Calendar
+    </button>
+    <button onclick="cerrarModalCalendario()"
+      style="width:100%;background:#f3f4f6;border:none;border-radius:12px;padding:12px;color:#6b7280;font-weight:600;font-size:14px;cursor:pointer">
+      Ahora no
+    </button>
+  </div>
+</div>
+
+<!-- MODAL BORRAR MEDICAMENTO -->
+<div id="modal-borrar-med" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:white;border-radius:16px;padding:24px;width:100%;max-width:340px;text-align:center">
+    <div style="font-size:36px;margin-bottom:8px">🗑️</div>
+    <h3 style="font-size:16px;color:#1f2937;margin-bottom:8px">¿Borrar medicamento?</h3>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:4px">Se borrará <strong id="modal-borrar-med-nombre" style="color:#1f2937"></strong> del pastillero.</p>
+    <p style="font-size:12px;color:#9ca3af;margin-bottom:20px">Si lo agregaste a Google Calendar, acordate de borrarlo desde allí también.</p>
+    <div style="display:flex;gap:10px">
+      <button onclick="cerrarModalBorrarMed()"
+        style="flex:1;background:#f3f4f6;border:none;border-radius:10px;padding:11px;color:#6b7280;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button>
+      <button onclick="confirmarBorrarMed()"
+        style="flex:1;background:#dc2626;border:none;border-radius:10px;padding:11px;color:white;font-weight:700;font-size:14px;cursor:pointer">Borrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM BORRAR TODO -->
+<div id="confirm-modal">
+  <div class="confirm-inner">
+    <h3 id="confirm-title">¿Borrar todos los registros?</h3>
+    <p id="confirm-msg">Esta acción no se puede deshacer.</p>
+    <div class="confirm-btns">
+      <button style="background:#f3f4f6;color:#6b7280" onclick="cerrarConfirm()">Cancelar</button>
+      <button style="background:#dc2626;color:white" id="confirm-ok-btn">Borrar todo</button>
+    </div>
+  </div>
+</div>
+
+<!-- INPUTS OCULTOS -->
+<input type="file" id="input-camara"  accept="image/*" capture="environment" style="display:none" onchange="recibirFoto(event)"/>
+<input type="file" id="input-galeria" accept="image/*" style="display:none" onchange="recibirFoto(event)"/>
+<input type="file" id="input-perfil"  accept="image/*" style="display:none" onchange="recibirFotoPerfil(event)"/>
+
+<!-- APP -->
+<div id="app" style="display:none;flex:1;display:flex;flex-direction:column;min-height:100vh">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="avatar-wrap" onclick="document.getElementById('input-perfil').click()">
+        <div class="avatar" id="avatar-display"><span>👵</span></div>
+        <div class="avatar-edit">📷</div>
+      </div>
+      <div class="user-info">
+        <div id="name-view">
+          <div class="user-greeting">Bienvenido/a,</div>
+          <div class="user-name" id="user-name-lbl" onclick="editarNombre()">Agregar nombre ✏️</div>
+        </div>
+        <div id="name-edit-wrap" class="name-edit" style="display:none">
+          <input id="name-input" placeholder="Tu nombre..." onkeydown="if(event.key==='Enter')guardarNombre()"/>
+          <button onclick="guardarNombre()">✓</button>
+        </div>
+        <div class="user-sub">🤖 Dr. Bot · Asistente de Salud</div>
+      </div>
+      <div class="header-count">
+        <div class="num" id="med-count">0</div>
+        <div class="lbl">💊 meds</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('chat')"         id="tab-chat"><span class="tab-icon">💬</span>Chat</button>
+      <button class="tab"        onclick="setTab('medicamentos')" id="tab-medicamentos"><span class="tab-icon">💊</span>Pastillero</button>
+      <button class="tab"        onclick="setTab('presion')"      id="tab-presion"><span class="tab-icon">❤️</span>Presión</button>
+      <button class="tab"        onclick="setTab('glucemia')"     id="tab-glucemia"><span class="tab-icon">🩸</span>Glucemia</button>
+    </div>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="content">
+
+    <!-- CHAT -->
+    <div id="page-chat" class="chat-wrap">
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chat-input-bar">
+        <input id="chat-input" placeholder="Escribe tu consulta aquí..." onkeydown="if(event.key==='Enter')enviarMensaje()"/>
+        <button class="chat-send" id="chat-send" onclick="enviarMensaje()">➤</button>
+      </div>
+    </div>
+
+    <!-- PASTILLERO -->
+    <div id="page-medicamentos" class="scroll" style="display:none">
+      <button class="btn-fill" style="background:linear-gradient(135deg,#1e40af,#2563eb);margin-bottom:14px" onclick="toggleFormMed()">➕ Agregar Medicamento</button>
+      <div id="form-med" class="card" style="display:none">
+        <div class="card-title" style="color:#1e40af">💊 Nuevo Medicamento</div>
+        <div class="foto-zone" id="foto-zone-med" onclick="abrirModalFoto()">
+          <div class="foto-placeholder">
+            <div class="icon">📷</div>
+            <div class="txt">Tocar para agregar foto</div>
+            <div class="sub">del envase o de la pastilla</div>
+          </div>
+        </div>
+        <input class="inp" id="med-nombre" placeholder="Nombre del medicamento *"/>
+        <input class="inp" id="med-dosis"  placeholder="Dosis (ej: 1 comprimido, 5 mg)"/>
+        <div class="row2">
+          <div class="col">
+            <div class="lbl">Hora del recordatorio *</div>
+            <input class="inp" type="time" id="med-hora" style="margin-bottom:0"/>
+          </div>
+          <div class="col">
+            <div class="lbl">Frecuencia</div>
+            <select class="inp" id="med-frecuencia" style="margin-bottom:0">
+              <option value="diaria">Diaria</option>
+              <option value="cada 8hs">Cada 8 hs</option>
+              <option value="cada 12hs">Cada 12 hs</option>
+              <option value="semanal">Semanal</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-fill" style="background:#6b7280" onclick="cancelarMed()">Cancelar</button>
+          <button class="btn-fill" style="background:linear-gradient(135deg,#1e40af,#2563eb);flex:2" onclick="guardarMed()">💾 Guardar</button>
+        </div>
+      </div>
+      <div id="lista-meds"></div>
+    </div>
+
+    <!-- PRESIÓN -->
+    <div id="page-presion" class="scroll" style="display:none">
+      <div class="card">
+        <div class="card-title" style="color:#dc2626">❤️ Registrar Presión Arterial</div>
+        <div class="row2">
+          <div class="col"><div class="lbl">Sistólica (mmHg)</div><input class="inp" type="number" id="pa-sist"  placeholder="ej: 120" style="margin-bottom:0"/></div>
+          <div class="col"><div class="lbl">Diastólica (mmHg)</div><input class="inp" type="number" id="pa-diast" placeholder="ej: 80"  style="margin-bottom:0"/></div>
+        </div>
+        <input class="inp" type="number" id="pa-pulso" placeholder="Pulso (latidos/min, opcional)" style="margin-top:8px"/>
+        <input class="inp" id="pa-nota" placeholder="Nota opcional"/>
+        <button class="btn-fill" style="background:linear-gradient(135deg,#dc2626,#ef4444)" onclick="guardarPA()">➕ Registrar</button>
+      </div>
+
+      <!-- Gráfico presión -->
+      <div class="grafico-card" id="grafico-pa-wrap" style="display:none">
+        <div class="grafico-title" style="color:#dc2626">📈 Evolución de Presión Arterial</div>
+        <div id="grafico-pa"></div>
+        <div class="grafico-leyenda">
+          <div class="leyenda-item"><div class="leyenda-dot" style="background:#dc2626"></div>Sistólica</div>
+          <div class="leyenda-item"><div class="leyenda-dot" style="background:#f97316"></div>Diastólica</div>
+          <div class="leyenda-item"><div class="leyenda-dot" style="background:#9ca3af;opacity:.5;height:2px;width:18px;border-radius:2px"></div>Límite normal</div>
+        </div>
+      </div>
+
+      <div class="ref-box" style="background:#fff1f2;border:1px solid #fecdd3">
+        <strong style="color:#dc2626">📊 Valores normales</strong><br/>
+        ✅ Normal: &lt;120 / &lt;80 mmHg<br/>⚠️ Elevada: 120–129 / &lt;80 mmHg<br/>🚨 Alta: ≥130 / ≥80 mmHg
+      </div>
+
+      <button class="btn-outline" id="btn-pdf-pa" style="display:none;border:2px solid #dc2626;color:#dc2626" onclick="descargarPA()">
+        <span style="font-size:20px">📥</span> Descargar Registro de Presión
+      </button>
+      <button class="btn-danger" id="btn-borrar-pa" style="display:none" onclick="confirmarBorrar('pa')">
+        🗑️ Borrar todos los registros de presión
+      </button>
+      <div id="lista-pa"></div>
+    </div>
+
+    <!-- GLUCEMIA -->
+    <div id="page-glucemia" class="scroll" style="display:none">
+      <div class="card">
+        <div class="card-title" style="color:#7c3aed">🩸 Registrar Glucemia</div>
+        <div class="row2">
+          <div class="col"><div class="lbl">Valor (mg/dL)</div><input class="inp" type="number" id="gl-valor" placeholder="ej: 95" style="margin-bottom:0"/></div>
+          <div class="col">
+            <div class="lbl">Momento</div>
+            <select class="inp" id="gl-momento" style="margin-bottom:0">
+              <option value="ayunas">En ayunas</option>
+              <option value="postprandial">Postprandial</option>
+              <option value="antes de dormir">Antes de dormir</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <input class="inp" id="gl-nota" placeholder="Nota opcional" style="margin-top:8px"/>
+        <button class="btn-fill" style="background:linear-gradient(135deg,#7c3aed,#9333ea)" onclick="guardarGL()">➕ Registrar</button>
+      </div>
+
+      <!-- Gráfico glucemia -->
+      <div class="grafico-card" id="grafico-gl-wrap" style="display:none">
+        <div class="grafico-title" style="color:#7c3aed">📈 Evolución de Glucemia</div>
+        <div id="grafico-gl"></div>
+        <div class="grafico-leyenda">
+          <div class="leyenda-item"><div class="leyenda-dot" style="background:#7c3aed"></div>Valor</div>
+          <div class="leyenda-item"><div class="leyenda-dot" style="background:#9ca3af;opacity:.5;height:2px;width:18px;border-radius:2px"></div>Límite normal (ayunas 99)</div>
+        </div>
+      </div>
+
+      <div class="ref-box" style="background:#f5f3ff;border:1px solid #ddd6fe">
+        <strong style="color:#7c3aed">📊 Valores normales</strong><br/>
+        ✅ Ayunas: 70–99 mg/dL<br/>⚠️ Prediabetes: 100–125 mg/dL<br/>🚨 Diabetes: ≥126 mg/dL<br/>✅ Postprandial: &lt;140 mg/dL
+      </div>
+
+      <button class="btn-outline" id="btn-pdf-gl" style="display:none;border:2px solid #7c3aed;color:#7c3aed" onclick="descargarGL()">
+        <span style="font-size:20px">📥</span> Descargar Registro de Glucemia
+      </button>
+      <button class="btn-danger" id="btn-borrar-gl" style="display:none" onclick="confirmarBorrar('gl')">
+        🗑️ Borrar todos los registros de glucemia
+      </button>
+      <div id="lista-gl"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// STORAGE — cada sección se guarda por separado
+// ════════════════════════════════════════════════════════════════
+const SK = {
+  perfil:    "drbot_perfil",
+  meds:      "drbot_meds",
+  presiones: "drbot_presiones",
+  glucemias: "drbot_glucemias",
+  chat:      "drbot_chat"
+};
+
+function leerLS(key, def) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
+}
+function escribirLS(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { console.warn("Storage lleno", e); }
+}
+
+// Estado en memoria
+let perfil    = leerLS(SK.perfil,    { nombre: "", avatarSrc: "" });
+let meds      = leerLS(SK.meds,      []);
+let presiones = leerLS(SK.presiones, []);
+let glucemias = leerLS(SK.glucemias, []);
+let chatHist  = leerLS(SK.chat,      [{
+  role:"assistant",
+  content:"¡Hola! Soy Dr. Bot 🤖\n\nPuedo ayudarte con:\n• 💊 Pastillero con foto de cada medicamento\n• 🔔 Recordatorios automáticos\n• ❤️ Presión arterial con gráfico de evolución\n• 🩸 Glucemia con gráfico de evolución\n• 📥 Descargar registros\n\n¿En qué te ayudo hoy?"
+}]);
+
+// Guardar secciones individualmente
+function guardarPerfil()    { escribirLS(SK.perfil,    perfil);    }
+function guardarMeds()      { escribirLS(SK.meds,      meds);      }
+function guardarPresiones() { escribirLS(SK.presiones, presiones); }
+function guardarGlucemias() { escribirLS(SK.glucemias, glucemias); }
+function guardarChat()      { escribirLS(SK.chat,      chatHist);  }
+
+// ════════════════════════════════════════════════════════════════
+// CLAUDE API
+// ════════════════════════════════════════════════════════════════
+async function askClaude(msgs) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      system: "Eres un asistente médico amigable llamado Dr. Bot. Ayudas a personas mayores con medicamentos, presión arterial y glucemia. Responde en español, claro y breve. Cuando mencionen valores de presión o glucemia comenta si están en rango normal. Recordá siempre consultar al médico.",
+      messages: msgs
+    })
+  });
+  const d = await res.json();
+  return d.content?.[0]?.text || "Lo siento, no pude responder ahora.";
+}
+
+// ════════════════════════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════════════════════════
+function setTab(t) {
+  ["chat","medicamentos","presion","glucemia"].forEach(id => {
+    document.getElementById("page-"+id).style.display = id===t ? (id==="chat"?"flex":"block") : "none";
+    document.getElementById("tab-"+id).classList.toggle("active", id===t);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// PERFIL
+// ════════════════════════════════════════════════════════════════
+function editarNombre() {
+  document.getElementById("name-view").style.display = "none";
+  document.getElementById("name-edit-wrap").style.display = "flex";
+  document.getElementById("name-input").value = perfil.nombre;
+  document.getElementById("name-input").focus();
+}
+function guardarNombre() {
+  const n = document.getElementById("name-input").value.trim();
+  if (!n) return;
+  perfil.nombre = n;
+  guardarPerfil();
+  document.getElementById("user-name-lbl").textContent = n + " ✏️";
+  document.getElementById("name-view").style.display = "block";
+  document.getElementById("name-edit-wrap").style.display = "none";
+}
+function recibirFotoPerfil(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    perfil.avatarSrc = ev.target.result;
+    guardarPerfil();
+    document.getElementById("avatar-display").innerHTML = `<img src="${ev.target.result}" alt="perfil"/>`;
+  };
+  r.readAsDataURL(f);
+}
+
+// ════════════════════════════════════════════════════════════════
+// FOTO MEDICAMENTO
+// ════════════════════════════════════════════════════════════════
+let fotoMedActual = null;
+
+function abrirModalFoto()  { document.getElementById("foto-modal").classList.add("open"); }
+function cerrarModalFoto() { document.getElementById("foto-modal").classList.remove("open"); }
+function abrirCamara()  { cerrarModalFoto(); document.getElementById("input-camara").click(); }
+function abrirGaleria() { cerrarModalFoto(); document.getElementById("input-galeria").click(); }
+
+function recibirFoto(e) {
+  const f = e.target.files[0]; if (!f) return;
+  // Comprimir imagen antes de guardar (max 600px)
+  const img = new Image();
+  const url = URL.createObjectURL(f);
+  img.onload = () => {
+    const MAX = 600;
+    let w = img.width, h = img.height;
+    if (w > MAX || h > MAX) {
+      if (w > h) { h = Math.round(h * MAX/w); w = MAX; }
+      else       { w = Math.round(w * MAX/h); h = MAX; }
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+    fotoMedActual = canvas.toDataURL("image/jpeg", 0.7);
+    URL.revokeObjectURL(url);
+    const zone = document.getElementById("foto-zone-med");
+    zone.innerHTML = `<img src="${fotoMedActual}" alt="medicamento" style="width:100%;height:100%;object-fit:cover"/>
+      <button class="remove-btn" onclick="quitarFotoMed(event)">✕</button>`;
+  };
+  img.src = url;
+  e.target.value = "";
+}
+function quitarFotoMed(e) {
+  e.stopPropagation();
+  fotoMedActual = null;
+  document.getElementById("foto-zone-med").innerHTML = `
+    <div class="foto-placeholder">
+      <div class="icon">📷</div>
+      <div class="txt">Tocar para agregar foto</div>
+      <div class="sub">del envase o de la pastilla</div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MEDICAMENTOS
+// ════════════════════════════════════════════════════════════════
+function toggleFormMed() {
+  const f = document.getElementById("form-med");
+  f.style.display = f.style.display === "none" ? "block" : "none";
+}
+function cancelarMed() {
+  document.getElementById("form-med").style.display = "none";
+  limpiarFormMed();
+}
+function limpiarFormMed() {
+  ["med-nombre","med-dosis","med-hora"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("med-frecuencia").value = "diaria";
+  fotoMedActual = null;
+  document.getElementById("foto-zone-med").innerHTML = `
+    <div class="foto-placeholder">
+      <div class="icon">📷</div>
+      <div class="txt">Tocar para agregar foto</div>
+      <div class="sub">del envase o de la pastilla</div>
+    </div>`;
+}
+// ════════════════════════════════════════════════════════════════
+// GOOGLE CALENDAR — Opción B (link prellenado)
+// Para migrar a API (Opción A) reemplazar agregarACalendario()
+// ════════════════════════════════════════════════════════════════
+function frecuenciaARRule(freq) {
+  const map = {
+    "diaria":    "RRULE:FREQ=DAILY",
+    "cada 8hs":  "RRULE:FREQ=DAILY;INTERVAL=1",  // se agrega 3 veces al día manualmente
+    "cada 12hs": "RRULE:FREQ=DAILY;INTERVAL=1",
+    "semanal":   "RRULE:FREQ=WEEKLY"
+  };
+  return map[freq] || "RRULE:FREQ=DAILY";
+}
+
+function agregarACalendario(med) {
+  // Construir fecha/hora de inicio (hoy a la hora indicada)
+  const ahora = new Date();
+  const [hh, mm] = med.hora.split(":").map(Number);
+  ahora.setHours(hh, mm, 0, 0);
+
+  // Formato requerido por Google Calendar: YYYYMMDDTHHmmSS
+  const pad = n => String(n).padStart(2, "0");
+  const fmt = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+
+  const inicio = fmt(ahora);
+  const fin    = fmt(new Date(ahora.getTime() + 15*60000)); // 15 min de duración
+
+  const titulo  = encodeURIComponent(`💊 ${med.nombre}${med.dosis ? " — "+med.dosis : ""}`);
+  const detalle = encodeURIComponent(`Medicamento: ${med.nombre}\nDosis: ${med.dosis||"según indicación"}\nFrecuencia: ${med.frecuencia}\n\nRecordatorio creado por Dr. Bot 🤖`);
+  const rrule   = encodeURIComponent(frecuenciaARRule(med.frecuencia));
+
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+    + `&text=${titulo}`
+    + `&dates=${inicio}/${fin}`
+    + `&details=${detalle}`
+    + `&recur=${rrule}`
+    + `&reminders=DISPLAY:0`;   // notificación al inicio
+
+  window.open(url, "_blank");
+}
+
+function guardarMed() {
+  const nombre = document.getElementById("med-nombre").value.trim();
+  const hora   = document.getElementById("med-hora").value;
+  if (!nombre || !hora) { alert("Completá el nombre y la hora."); return; }
+  const med = {
+    id: Date.now(), nombre, hora,
+    dosis:      document.getElementById("med-dosis").value.trim(),
+    frecuencia: document.getElementById("med-frecuencia").value,
+    foto:       fotoMedActual
+  };
+  meds.push(med);
+  guardarMeds();
+  renderMeds();
+  cancelarMed();
+
+  // Mostrar modal para agregar al calendario
+  setTimeout(() => mostrarModalCalendario(med), 300);
+}
+
+let medPendienteCalendario = null;
+function mostrarModalCalendario(med) {
+  medPendienteCalendario = med;
+  document.getElementById("modal-cal-nombre").textContent = med.nombre;
+  document.getElementById("modal-cal-hora").textContent   = med.hora + " · " + med.frecuencia;
+  document.getElementById("modal-calendario").classList.add("open");
+}
+function cerrarModalCalendario() {
+  medPendienteCalendario = null;
+  document.getElementById("modal-calendario").classList.remove("open");
+}
+function confirmarAgregarCalendario() {
+  if (medPendienteCalendario) agregarACalendario(medPendienteCalendario);
+  cerrarModalCalendario();
+}
+
+let medPendienteBorrar = null;
+function borrarMed(id) {
+  const med = meds.find(m => m.id === id);
+  if (!med) return;
+  medPendienteBorrar = id;
+  document.getElementById("modal-borrar-med-nombre").textContent = med.nombre;
+  document.getElementById("modal-borrar-med").classList.add("open");
+}
+function cerrarModalBorrarMed() {
+  medPendienteBorrar = null;
+  document.getElementById("modal-borrar-med").classList.remove("open");
+}
+function confirmarBorrarMed() {
+  if (medPendienteBorrar) {
+    meds = meds.filter(m => m.id !== medPendienteBorrar);
+    guardarMeds();
+    renderMeds();
+  }
+  cerrarModalBorrarMed();
+}
+
+function renderMeds() {
+  document.getElementById("med-count").textContent = meds.length;
+  const el = document.getElementById("lista-meds");
+  if (!meds.length) {
+    el.innerHTML = `<div class="empty"><div class="ico">💊</div><div class="txt">Aún no hay medicamentos.\nAgregá el primero con su foto 📷</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="grid">${meds.map(m => `
+    <div class="med-card">
+      <div class="med-foto">
+        ${m.foto ? `<img src="${m.foto}" alt="${m.nombre}"/>` : `<div class="emoji">💊</div>`}
+      </div>
+      <div class="med-info">
+        <div class="med-name">${m.nombre}</div>
+        ${m.dosis ? `<div class="med-dosis">${m.dosis}</div>` : ""}
+        <div class="med-hora">🕐 ${m.hora}</div>
+        <div class="med-freq">${m.frecuencia}</div>
+        <button onclick="agregarACalendario(${JSON.stringify(m).replace(/"/g,'&quot;')})"
+          style="margin-top:6px;width:100%;border:1.5px solid #34a853;border-radius:8px;padding:5px 0;font-size:11px;font-weight:700;color:#34a853;background:#f0fdf4;cursor:pointer">
+          📅 Agregar a Google Calendar
+        </button>
+      </div>
+      <button class="med-del" onclick="borrarMed(${m.id})">✕</button>
+    </div>`).join("")}</div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// PRESIÓN
+// ════════════════════════════════════════════════════════════════
+function paStatus(s, d) {
+  s=+s; d=+d;
+  if (s<120&&d<80) return {label:"Normal",    color:"#10b981"};
+  if (s<130&&d<80) return {label:"Elevada",   color:"#f59e0b"};
+  if (s<140||d<90) return {label:"Alta leve", color:"#ef4444"};
+  return                  {label:"Alta",      color:"#dc2626"};
+}
+function guardarPA() {
+  const s = document.getElementById("pa-sist").value.trim();
+  const d = document.getElementById("pa-diast").value.trim();
+  if (!s || !d) { alert("Completá sistólica y diastólica."); return; }
+  presiones.unshift({
+    id: Date.now(), sistolica: +s, diastolica: +d,
+    pulso: document.getElementById("pa-pulso").value.trim(),
+    nota:  document.getElementById("pa-nota").value.trim(),
+    fecha: new Date().toLocaleString("es-AR"),
+    ts:    Date.now()
+  });
+  ["pa-sist","pa-diast","pa-pulso","pa-nota"].forEach(id => document.getElementById(id).value = "");
+  guardarPresiones();
+  renderPA();
+}
+function borrarUnaPA(id) {
+  presiones = presiones.filter(p => p.id !== id);
+  guardarPresiones();
+  renderPA();
+}
+function renderPA() {
+  const tieneReg = presiones.length > 0;
+  document.getElementById("btn-pdf-pa").style.display    = tieneReg ? "flex"  : "none";
+  document.getElementById("btn-borrar-pa").style.display = tieneReg ? "block" : "none";
+  document.getElementById("grafico-pa-wrap").style.display = tieneReg ? "block" : "none";
+
+  if (tieneReg) renderGraficoPa();
+
+  const el = document.getElementById("lista-pa");
+  if (!tieneReg) {
+    el.innerHTML = `<div class="empty"><div class="ico">❤️</div><div class="txt">Aún no hay registros de presión</div></div>`;
+    return;
+  }
+  el.innerHTML = presiones.map(p => {
+    const st = paStatus(p.sistolica, p.diastolica);
+    return `<div class="reg-card">
+      <div class="reg-row">
+        <div>
+          <div class="reg-val">${p.sistolica}/${p.diastolica} <span class="reg-unit">mmHg</span></div>
+          ${p.pulso ? `<div class="reg-sub">💓 ${p.pulso} lpm</div>` : ""}
+          <div class="reg-fecha">${p.fecha}</div>
+          ${p.nota ? `<div class="reg-nota">📝 ${p.nota}</div>` : ""}
+        </div>
+        <div class="reg-right">
+          <span class="badge" style="background:${st.color}22;color:${st.color}">${st.label}</span>
+          <button class="del-btn" onclick="borrarUnaPA(${p.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ════════════════════════════════════════════════════════════════
+// GLUCEMIA
+// ════════════════════════════════════════════════════════════════
+function glStatus(v, m) {
+  v=+v;
+  if (m==="ayunas") { if(v<100) return{label:"Normal",color:"#10b981"}; if(v<126) return{label:"Prediabetes",color:"#f59e0b"}; return{label:"Alto",color:"#ef4444"}; }
+  if (v<140) return{label:"Normal",color:"#10b981"}; if(v<200) return{label:"Elevada",color:"#f59e0b"}; return{label:"Alta",color:"#ef4444"};
+}
+function guardarGL() {
+  const v = document.getElementById("gl-valor").value.trim();
+  if (!v) { alert("Ingresá el valor de glucemia."); return; }
+  glucemias.unshift({
+    id: Date.now(), valor: +v,
+    momento: document.getElementById("gl-momento").value,
+    nota:    document.getElementById("gl-nota").value.trim(),
+    fecha:   new Date().toLocaleString("es-AR"),
+    ts:      Date.now()
+  });
+  ["gl-valor","gl-nota"].forEach(id => document.getElementById(id).value = "");
+  guardarGlucemias();
+  renderGL();
+}
+function borrarUnaGL(id) {
+  glucemias = glucemias.filter(g => g.id !== id);
+  guardarGlucemias();
+  renderGL();
+}
+function renderGL() {
+  const tieneReg = glucemias.length > 0;
+  document.getElementById("btn-pdf-gl").style.display    = tieneReg ? "flex"  : "none";
+  document.getElementById("btn-borrar-gl").style.display = tieneReg ? "block" : "none";
+  document.getElementById("grafico-gl-wrap").style.display = tieneReg ? "block" : "none";
+
+  if (tieneReg) renderGraficoGL();
+
+  const el = document.getElementById("lista-gl");
+  if (!tieneReg) {
+    el.innerHTML = `<div class="empty"><div class="ico">🩸</div><div class="txt">Aún no hay registros de glucemia</div></div>`;
+    return;
+  }
+  el.innerHTML = glucemias.map(g => {
+    const st = glStatus(g.valor, g.momento);
+    return `<div class="reg-card">
+      <div class="reg-row">
+        <div>
+          <div class="reg-val">${g.valor} <span class="reg-unit">mg/dL</span></div>
+          <div class="reg-sub">🕐 ${g.momento}</div>
+          <div class="reg-fecha">${g.fecha}</div>
+          ${g.nota ? `<div class="reg-nota">📝 ${g.nota}</div>` : ""}
+        </div>
+        <div class="reg-right">
+          <span class="badge" style="background:${st.color}22;color:${st.color}">${st.label}</span>
+          <button class="del-btn" onclick="borrarUnaGL(${g.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ════════════════════════════════════════════════════════════════
+// GRÁFICOS SVG
+// ════════════════════════════════════════════════════════════════
+function crearGraficoSVG(datos, config) {
+  // datos: [{x (label), vals: [{v, color, label}]}]
+  // config: {w, h, min, max, refLines: [{y, color, label}], colores}
+  const W = config.w || 420, H = config.h || 180;
+  const PAD = { top:20, right:16, bottom:40, left:44 };
+  const gW = W - PAD.left - PAD.right;
+  const gH = H - PAD.top  - PAD.bottom;
+
+  const minV = config.min, maxV = config.max;
+  const rango = maxV - minV || 1;
+
+  const yPx = v => PAD.top + gH - ((v - minV) / rango) * gH;
+  const xPx = i => PAD.left + (datos.length === 1 ? gW/2 : i * gW / (datos.length - 1));
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" class="grafico-svg" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Fondo franjas
+  const nFranjas = 4;
+  for (let i = 0; i < nFranjas; i++) {
+    const y1 = PAD.top + i * gH/nFranjas;
+    if (i % 2 === 0) svg += `<rect x="${PAD.left}" y="${y1}" width="${gW}" height="${gH/nFranjas}" fill="#f9fafb"/>`;
+  }
+
+  // Líneas de referencia
+  if (config.refLines) {
+    config.refLines.forEach(ref => {
+      const y = yPx(ref.y);
+      if (y >= PAD.top && y <= PAD.top + gH) {
+        svg += `<line x1="${PAD.left}" y1="${y}" x2="${PAD.left+gW}" y2="${y}" stroke="${ref.color}" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.6"/>`;
+        svg += `<text x="${PAD.left+gW+2}" y="${y+4}" font-size="9" fill="${ref.color}" opacity="0.8">${ref.y}</text>`;
+      }
+    });
+  }
+
+  // Eje Y — etiquetas
+  const nTicks = 4;
+  for (let i = 0; i <= nTicks; i++) {
+    const val = minV + (rango * i / nTicks);
+    const y = yPx(val);
+    svg += `<text x="${PAD.left-6}" y="${y+4}" font-size="10" fill="#9ca3af" text-anchor="end">${Math.round(val)}</text>`;
+    svg += `<line x1="${PAD.left}" y1="${y}" x2="${PAD.left+gW}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>`;
+  }
+
+  // Líneas de cada serie
+  config.series.forEach(serie => {
+    const pts = datos.map((d, i) => {
+      const v = d.vals[serie.idx];
+      return v != null ? `${xPx(i)},${yPx(v)}` : null;
+    }).filter(Boolean);
+    if (pts.length > 1) {
+      svg += `<polyline points="${pts.join(" ")}" fill="none" stroke="${serie.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+    // Puntos
+    datos.forEach((d, i) => {
+      const v = d.vals[serie.idx];
+      if (v == null) return;
+      const cx = xPx(i), cy = yPx(v);
+      svg += `<circle cx="${cx}" cy="${cy}" r="4" fill="${serie.color}" stroke="white" stroke-width="2"/>`;
+      // Valor encima
+      svg += `<text x="${cx}" y="${cy-8}" font-size="10" fill="${serie.color}" text-anchor="middle" font-weight="600">${v}</text>`;
+    });
+  });
+
+  // Eje X — etiquetas (fecha abreviada)
+  datos.forEach((d, i) => {
+    const x = xPx(i);
+    // Solo mostrar algunas si hay muchos
+    const mostrar = datos.length <= 7 || i % Math.ceil(datos.length/6) === 0 || i === datos.length-1;
+    if (mostrar) {
+      svg += `<text x="${x}" y="${PAD.top+gH+14}" font-size="9" fill="#9ca3af" text-anchor="middle">${d.x}</text>`;
+    }
+  });
+
+  // Borde eje
+  svg += `<rect x="${PAD.left}" y="${PAD.top}" width="${gW}" height="${gH}" fill="none" stroke="#e5e7eb" stroke-width="1" rx="4"/>`;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function renderGraficoPa() {
+  const el = document.getElementById("grafico-pa");
+  // Ordenar por timestamp ascendente para el gráfico
+  const ordenados = [...presiones].sort((a,b) => (a.ts||0)-(b.ts||0));
+  if (ordenados.length < 1) { el.innerHTML = `<div class="grafico-empty">Registrá al menos un valor para ver el gráfico</div>`; return; }
+
+  const datos = ordenados.map(p => ({
+    x: fechaCorta(p.fecha),
+    vals: [p.sistolica, p.diastolica]
+  }));
+
+  const todos = ordenados.flatMap(p => [p.sistolica, p.diastolica]);
+  const minV = Math.max(0, Math.min(...todos) - 15);
+  const maxV = Math.max(...todos) + 20;
+
+  el.innerHTML = crearGraficoSVG(datos, {
+    w:420, h:200, min: minV, max: maxV,
+    series: [
+      {idx:0, color:"#dc2626", label:"Sistólica"},
+      {idx:1, color:"#f97316", label:"Diastólica"}
+    ],
+    refLines: [
+      {y:120, color:"#f59e0b", label:"120"},
+      {y:80,  color:"#10b981", label:"80"}
+    ]
+  });
+}
+
+function renderGraficoGL() {
+  const el = document.getElementById("grafico-gl");
+  const ordenados = [...glucemias].sort((a,b) => (a.ts||0)-(b.ts||0));
+  if (ordenados.length < 1) { el.innerHTML = `<div class="grafico-empty">Registrá al menos un valor para ver el gráfico</div>`; return; }
+
+  const datos = ordenados.map(g => ({
+    x: fechaCorta(g.fecha),
+    vals: [g.valor]
+  }));
+
+  const vals = ordenados.map(g => g.valor);
+  const minV = Math.max(0, Math.min(...vals) - 20);
+  const maxV = Math.max(...vals) + 30;
+
+  el.innerHTML = crearGraficoSVG(datos, {
+    w:420, h:200, min: minV, max: maxV,
+    series: [
+      {idx:0, color:"#7c3aed", label:"Glucemia"}
+    ],
+    refLines: [
+      {y:99,  color:"#10b981", label:"99"},
+      {y:126, color:"#ef4444", label:"126"}
+    ]
+  });
+}
+
+function fechaCorta(fecha) {
+  // "10/5/2025, 14:30:00" → "10/5 14:30"
+  try {
+    const p = fecha.split(",");
+    const d = p[0].trim().split("/");
+    const t = (p[1]||"").trim().split(":");
+    return `${d[0]}/${d[1]} ${t[0]}:${t[1]||"00"}`;
+  } catch { return fecha.slice(0,8); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// BORRAR TODO (con confirmación)
+// ════════════════════════════════════════════════════════════════
+let pendienteBorrar = null;
+
+function confirmarBorrar(tipo) {
+  pendienteBorrar = tipo;
+  const titulos = { pa:"Borrar registros de presión", gl:"Borrar registros de glucemia" };
+  document.getElementById("confirm-title").textContent = "⚠️ " + (titulos[tipo]||"Borrar registros");
+  document.getElementById("confirm-msg").textContent = "¿Estás segura/o? Se borrarán TODOS los registros de " + (tipo==="pa"?"presión arterial":"glucemia") + ". Esta acción no se puede deshacer.";
+  document.getElementById("confirm-ok-btn").onclick = ejecutarBorrar;
+  document.getElementById("confirm-modal").classList.add("open");
+}
+function cerrarConfirm() {
+  pendienteBorrar = null;
+  document.getElementById("confirm-modal").classList.remove("open");
+}
+function ejecutarBorrar() {
+  if (pendienteBorrar === "pa") {
+    presiones = [];
+    guardarPresiones();
+    renderPA();
+  } else if (pendienteBorrar === "gl") {
+    glucemias = [];
+    guardarGlucemias();
+    renderGL();
+  }
+  cerrarConfirm();
+}
+
+// ════════════════════════════════════════════════════════════════
+// CHAT
+// ════════════════════════════════════════════════════════════════
+let chatCargando = false;
+
+function renderChat() {
+  const el = document.getElementById("chat-msgs");
+  const avatarHTML = perfil.avatarSrc
+    ? `<img src="${perfil.avatarSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+    : "👵";
+
+  el.innerHTML = chatHist.map(m => {
+    if (m.role === "assistant") {
+      return `<div class="msg-row">
+        <div class="msg-avatar ${m.isReminder?"reminder":"bot"}">${m.isReminder?"🔔":"🤖"}</div>
+        <div>
+          <div class="msg-bubble ${m.isReminder?"reminder":"bot"}">${m.content}</div>
+          ${m.medFoto ? `<div class="reminder-img"><img src="${m.medFoto}" alt="med"/></div>` : ""}
+        </div>
+      </div>`;
+    } else {
+      return `<div class="msg-row user">
+        <div class="msg-bubble user">${m.content}</div>
+        <div class="msg-avatar me">${avatarHTML}</div>
+      </div>`;
+    }
+  }).join("");
+  el.scrollTop = el.scrollHeight;
+}
+
+async function enviarMensaje() {
+  const inp = document.getElementById("chat-input");
+  const txt = inp.value.trim();
+  if (!txt || chatCargando) return;
+  chatHist.push({role:"user", content:txt});
+  inp.value = "";
+  chatCargando = true;
+  document.getElementById("chat-send").disabled = true;
+  renderChat();
+
+  const el = document.getElementById("chat-msgs");
+  el.innerHTML += `<div class="msg-row" id="thinking-row">
+    <div class="msg-avatar bot">🤖</div>
+    <div class="thinking">💭 Pensando...</div>
+  </div>`;
+  el.scrollTop = el.scrollHeight;
+
+  try {
+    const api = chatHist.filter(m => !m.isReminder).map(m => ({role:m.role, content:m.content}));
+    const reply = await askClaude(api);
+    chatHist.push({role:"assistant", content:reply});
+  } catch {
+    chatHist.push({role:"assistant", content:"Error de conexión. Intentá de nuevo 🙏"});
+  }
+  chatCargando = false;
+  document.getElementById("chat-send").disabled = false;
+  guardarChat();
+  renderChat();
+}
+
+// ════════════════════════════════════════════════════════════════
+// RECORDATORIO
+// ════════════════════════════════════════════════════════════════
+setInterval(() => {
+  const now  = new Date();
+  const hhmm = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  meds.forEach(m => {
+    if (m.hora === hhmm) {
+      chatHist.push({
+        role:"assistant", isReminder:true, medFoto: m.foto||null,
+        content:`🔔 ¡Hora de tu medicamento!\n\n💊 ${m.nombre}\n📋 Dosis: ${m.dosis||"según indicación"}\n\nTomalo con un vaso de agua 💧`
+      });
+      guardarChat();
+      setTab("chat");
+      renderChat();
+    }
+  });
+}, 60000);
+
+// ════════════════════════════════════════════════════════════════
+// DESCARGAR REGISTROS
+// ════════════════════════════════════════════════════════════════
+function descargarHTML(titulo, encabezados, filas, color) {
+  const fecha = new Date().toLocaleDateString("es-AR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  const filasHTML = filas.length === 0
+    ? `<tr><td colspan="${encabezados.length}" style="text-align:center;color:#9ca3af;padding:20px">Sin registros</td></tr>`
+    : filas.map((f,i)=>`<tr style="background:${i%2===0?"#f9fafb":"#fff"}">${f.map(c=>`<td style="padding:8px 11px;font-size:12px;border-bottom:1px solid #f3f4f6">${c??"—"}</td>`).join("")}</tr>`).join("");
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>${titulo}</title>
+<style>@page{size:A4;margin:20mm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}
+.cab{background:${color};color:white;padding:18px 22px;border-radius:8px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+</style></head><body>
+<div class="cab">
+  <div><h1 style="font-size:18px;font-weight:bold">${titulo}</h1><p style="font-size:10px;opacity:.85;margin-top:3px">Registro personal</p></div>
+  <div style="font-size:10px;opacity:.8">${fecha}</div>
+</div>
+<p style="margin-bottom:10px;font-size:12px">Total: <strong style="color:${color}">${filas.length}</strong> registros</p>
+<table style="width:100%;border-collapse:collapse">
+  <thead><tr style="background:${color};color:white">${encabezados.map(h=>`<th style="padding:9px 11px;text-align:left;font-size:11px;text-transform:uppercase">${h}</th>`).join("")}</tr></thead>
+  <tbody>${filasHTML}</tbody>
+</table>
+<p style="margin-top:16px;font-size:10px;color:#9ca3af;text-align:center">Bot Médico de Salud · Consulte siempre a su médico</p>
+</body></html>`;
+  const blob = new Blob([html],{type:"application/octet-stream"});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = titulo.replace(/\s+/g,"_")+".html";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function descargarPA() {
+  descargarHTML("Registro de Presion Arterial",
+    ["Fecha y hora","Sistolica","Diastolica","Pulso","Estado","Nota"],
+    [...presiones].sort((a,b)=>(a.ts||0)-(b.ts||0)).map(p=>{
+      const st=paStatus(p.sistolica,p.diastolica);
+      return[p.fecha,`${p.sistolica} mmHg`,`${p.diastolica} mmHg`,p.pulso?`${p.pulso} lpm`:"—",st.label,p.nota||"—"];
+    }), "#dc2626");
+}
+function descargarGL() {
+  descargarHTML("Registro de Glucemia",
+    ["Fecha y hora","Valor","Momento","Estado","Nota"],
+    [...glucemias].sort((a,b)=>(a.ts||0)-(b.ts||0)).map(g=>{
+      const st=glStatus(g.valor,g.momento);
+      return[g.fecha,`${g.valor} mg/dL`,g.momento,st.label,g.nota||"—"];
+    }), "#7c3aed");
+}
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+window.addEventListener("DOMContentLoaded", () => {
+  if (perfil.nombre) {
+    document.getElementById("user-name-lbl").textContent = perfil.nombre + " ✏️";
+  }
+  if (perfil.avatarSrc) {
+    document.getElementById("avatar-display").innerHTML = `<img src="${perfil.avatarSrc}" alt="perfil"/>`;
+  }
+  renderChat();
+  renderMeds();
+  renderPA();
+  renderGL();
+  setTab("chat");
+
+  setTimeout(() => {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+  }, 600);
+});
+</script>
+</body>
+</html>
