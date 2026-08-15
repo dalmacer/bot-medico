@@ -421,15 +421,11 @@ function guardarChat()      { escribirLS(SK.chat,      chatHist);  }
 // CLAUDE API
 // ════════════════════════════════════════════════════════════════
 async function askClaude(msgs) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  // La clave está protegida en Netlify — nunca visible en el código
+  const res = await fetch("/.netlify/functions/claude", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: "Eres un asistente médico amigable llamado Dr. Bot. Ayudas a personas mayores con medicamentos, presión arterial y glucemia. Responde en español, claro y breve. Cuando mencionen valores de presión o glucemia comenta si están en rango normal. Recordá siempre consultar al médico.",
-      messages: msgs
-    })
+    body: JSON.stringify({ messages: msgs })
   });
   const d = await res.json();
   return d.content?.[0]?.text || "Lo siento, no pude responder ahora.";
