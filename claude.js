@@ -1,0 +1,37 @@
+exports.handler = async function(event, context) {
+  if (event.httpMethod !== "POST") {
+    return { statusCode: 405, body: "Method Not Allowed" };
+  }
+
+  try {
+    const body = JSON.parse(event.body);
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01"
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 1000,
+        system: "Eres un asistente médico amigable llamado Dr. Bot. Ayudás a personas mayores con medicamentos, presión arterial y glucemia. Respondé en español rioplatense, de forma clara, breve y cálida. Cuando mencionen valores de presión o glucemia, comentá si están en rango normal. Siempre recordá consultar al médico para decisiones importantes.",
+        messages: body.messages
+      })
+    });
+
+    const data = await response.json();
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    };
+
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message })
+    };
+  }
+};
